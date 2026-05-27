@@ -7,16 +7,22 @@
 <ion-content [fullscreen]="true">
   <h6>Entrée PIO Vanne 1</h6>
   <div class="voyant {{ voyant1 }}"></div>
+  <div class="message">{{ gpioMessage }}</div>
   <hr><hr><hr><hr><hr>
   <h6>Entrée analogique (0-3.3V)</h6>
   <div class="voltage">{{ voltage }}</div>
   <hr><hr><hr><hr><hr>
   <h6>Sortie PIO Vanne 2</h6>
   <div class="voyant {{ voyant2 }}"></div>
-  <ion-button class="bouton-vanne" fill="outline">Commuter la vanne</ion-button>
+  <ion-button class="bouton-vanne" fill="outline" (click)="vanne2($event)">Commuter la vanne</ion-button>
   <hr><hr><hr><hr><hr>
   <h6>Sortie analogique (0-3.3V)</h6>
-<ion-range aria-label="tension"></ion-range>
+<ion-range aria-label="tension"
+  min="0"
+  max="3.3"
+  step="0.1"
+  [(ngModel)]="tension"
+  (ionChange)="changerTension($event)"></ion-range>
 <hr><hr><hr><hr><hr>
 <ion-button expand="block">Retour menu</ion-button>
 </ion-content>
