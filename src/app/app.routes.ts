@@ -10,4 +10,8 @@ export const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full',
   },
+  {
+    path: 'tableau-de-bord',
+    loadComponent: () => import('./tableau-de-bord/tableau-de-bord.page').then( m => m.TableauDeBordPage)
+  },
 ];
