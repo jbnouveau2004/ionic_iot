@@ -3,19 +3,20 @@
   <hr><hr><hr>
 <h3>Réseau privé</h3>
   <ion-list>
+     <ion-item>
+    <ion-input labelPlacement="stacked" label="Adresse IP local" placeholder="192.168.1.20" [(ngModel)]="ip_local"></ion-input>
+  </ion-item>
   <ion-item>
-    <ion-input labelPlacement="stacked" label="Token" placeholder="Entrer token"></ion-input>
+    <ion-input labelPlacement="stacked" label="Token" placeholder="Entrer token" [(ngModel)]="token_local"></ion-input>
       <ion-icon slot="start" name="lock-closed" aria-hidden="true"></ion-icon>
       <ion-button fill="clear" slot="end" aria-label="Show/hide">
         <ion-icon slot="icon-only" name="eye" aria-hidden="true"></ion-icon>
       </ion-button>
     </ion-item>
    
- <ion-item>
-    <ion-input labelPlacement="stacked" label="Adresse IP local" placeholder="192.168.1.20"></ion-input>
-  </ion-item>
+
  </ion-list>
-<ion-button expand="block">Connexion</ion-button>
+<ion-button expand="block" (click)="envoyer_local()">Connexion</ion-button>
 <hr><hr><hr>
 <h3>Réseau publique</h3>
 <ion-list>

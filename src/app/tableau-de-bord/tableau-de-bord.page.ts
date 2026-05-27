@@ -7,6 +7,10 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Token } from '@angular/compiler';
 import { firstValueFrom } from 'rxjs';
 
+import { ActivatedRoute } from '@angular/router';
+
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-tableau-de-bord',
@@ -17,10 +21,13 @@ import { firstValueFrom } from 'rxjs';
 })
 export class TableauDeBordPage implements OnInit {
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router) {
 
 
    }
+
+    ip_local = '';
+  token_local = '';
 
 titre = 'Tableau de bord';
 voyant1 = '';
@@ -33,10 +40,17 @@ TOKEN = '';
 busy = false;
 gpioMessage = '';
 
+intervalId: any;
+
   ngOnInit() {
 
+     this.route.queryParams.subscribe(params => {
+      this.ip_local = params['ip_local'];
+      this.token_local = params['token_local'];
+     });
 
-setInterval(async() => {
+
+this.intervalId = setInterval(async() => {
 
   if (this.busy) return;
 
@@ -45,13 +59,13 @@ setInterval(async() => {
   try {
 
     const headers = new HttpHeaders({
-      'Authorization': 'Bearer ' + '2755'
+      'Authorization': 'Bearer ' + this.token_local
     });
 
     const data: any = await firstValueFrom(
 
       this.http.post(
-        'https://192.168.1.20/status',
+        'https://' + this.ip_local + '/status',
         {},
         {
           headers: headers
@@ -101,11 +115,11 @@ this.changerTension(event);
 async vanne2(event: any) {
 
   const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + '2755'
+    'Authorization': 'Bearer ' + this.token_local
   });
 
   this.http.post(
-    'https://192.168.1.20/togglevanne2',
+    'https://' + this.ip_local + '/togglevanne2',
     {},
     {
       headers: headers
@@ -127,12 +141,12 @@ async vanne2(event: any) {
 async changerTension(event: any) {
 
   const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + '2755',
+    'Authorization': 'Bearer ' + this.token_local,
     'X-PWM': this.tension
   });
 
   this.http.post(
-    'https://192.168.1.20/pwm',
+    'https://' + this.ip_local + '/pwm',
     {},
     {
       headers: headers
@@ -151,6 +165,9 @@ async changerTension(event: any) {
 
 }
 
-
+async retour(){
+  clearInterval(this.intervalId);
+this.router.navigate(['/home']);
+}
 
 }
