@@ -11,25 +11,28 @@ import { ActivatedRoute } from '@angular/router';
 
 import { Router } from '@angular/router';
 
+import { DataService } from '../services/data.service';
 
 @Component({
-  selector: 'app-tableau-de-bord',
-  templateUrl: './tableau-de-bord.page.html',
-  styleUrls: ['./tableau-de-bord.page.scss'],
+  selector: 'app-tableau-de-bord-en-ligne',
+  templateUrl: './tableau-de-bord-en-ligne.page.html',
+  styleUrls: ['./tableau-de-bord-en-ligne.page.scss'],
   standalone: true,
   imports: [IonContent, IonHeader, IonTitle, IonToolbar, CommonModule, FormsModule, IonRange, IonButton]
 })
-export class TableauDeBordPage implements OnInit {
+export class TableauDeBordEnLignePage implements OnInit {
 
-  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router) {
+  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private dataService: DataService) {
 
 
    }
 
-    ip_local = '';
+    ip_publique = '';
+    username = '';
+    password = '';
   token_local = '';
 
-titre = 'Tableau de bord';
+titre = 'Tableau de bord en ligne';
 voyant1 = '';
 voyant2 = '';
 voltage = '-.-- V';
@@ -43,12 +46,6 @@ intervalId: any;
 
   ngOnInit() {
 
-     this.route.queryParams.subscribe(params => {
-      this.ip_local = params['ip_local'];
-      this.token_local = params['token_local'];
-     });
-
-
 this.intervalId = setInterval(async() => {
 
   if (this.busy) return;
@@ -58,13 +55,13 @@ this.intervalId = setInterval(async() => {
   try {
 
     const headers = new HttpHeaders({
-      'Authorization': 'Bearer ' + this.token_local
+      'Authorization': 'Bearer ' + this.dataService.token_publique
     });
 
     const data: any = await firstValueFrom(
 
       this.http.post(
-        'https://' + this.ip_local + '/status',
+        'http://' + this.dataService.ip_publique + '/admin/pico/status',
         {},
         {
           headers: headers
@@ -114,11 +111,11 @@ this.changerTension(event);
 async vanne2(event: any) {
 
   const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + this.token_local
+    'Authorization': 'Bearer ' + this.dataService.token_publique
   });
 
   this.http.post(
-    'https://' + this.ip_local + '/togglevanne2',
+    'http://' + this.dataService.ip_publique + '/admin/pico/vanne2/on',
     {},
     {
       headers: headers
@@ -140,12 +137,12 @@ async vanne2(event: any) {
 async changerTension(event: any) {
 
   const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + this.token_local,
+    'Authorization': 'Bearer ' + this.dataService.token_publique,
     'X-PWM': this.tension
   });
 
   this.http.post(
-    'https://' + this.ip_local + '/pwm',
+    'http://' + this.dataService.ip_publique + '/admin/pico/voltage',
     {},
     {
       headers: headers

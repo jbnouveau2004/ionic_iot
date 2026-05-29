@@ -1,0 +1,38 @@
+ion-range{
+    width: 80vw;
+    margin-left: 10vw
+}
+
+ion-title{
+    text-align: center;
+}
+
+h6, .message{
+    text-align: center;
+}
+
+.bouton-vanne{
+    width: 40vw;
+    margin: 10px 30vw;
+}
+
+.voyant{
+    width: 50px;
+    height: 50px;
+    margin: auto calc(50vw - 25px);
+    border-radius: 50% 50% 50% 50%;
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
+}
+
+.vert{
+    background-color: green;
+}
+
+.rouge{
+    background-color: red;
+}
+
+.voltage{
+    font-size: 1.5rem;
+    text-align: center;
+}
