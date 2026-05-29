@@ -61,7 +61,7 @@ this.intervalId = setInterval(async() => {
     const data: any = await firstValueFrom(
 
       this.http.post(
-        'http://' + this.dataService.ip_publique + '/admin/pico/status',
+        'http://' + this.dataService.ip_publique + '/api/pico/status',
         {},
         {
           headers: headers
@@ -115,7 +115,7 @@ async vanne2(event: any) {
   });
 
   this.http.post(
-    'http://' + this.dataService.ip_publique + '/admin/pico/vanne2/on',
+    'http://' + this.dataService.ip_publique + '/api/pico/vanne2/on',
     {},
     {
       headers: headers
@@ -136,29 +136,21 @@ async vanne2(event: any) {
 
 async changerTension(event: any) {
 
+  this.tension = event.detail.value;
+
   const headers = new HttpHeaders({
     'Authorization': 'Bearer ' + this.dataService.token_publique,
-    'X-PWM': this.tension
+    'Content-Type': 'application/json'
   });
 
   this.http.post(
-    'http://' + this.dataService.ip_publique + '/admin/pico/voltage',
-    {},
-    {
-      headers: headers
-    }
+    'http://' + this.dataService.ip_publique + '/api/pico/pwm',
+    { pwm: this.tension },
+    { headers: headers }
   ).subscribe({
-
-    next: (reponse) => {
-      console.log('PWM envoyé', reponse);
-    },
-
-    error: (e) => {
-      console.log('Erreur PWM:', e.message);
-    }
-
+    next: (reponse) => console.log('PWM envoyé', reponse),
+    error: (e) => console.log('Erreur PWM:', e.message)
   });
-
 }
 
 async retour(){
