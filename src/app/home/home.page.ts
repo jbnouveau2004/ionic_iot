@@ -21,10 +21,10 @@ export class HomePage implements OnInit  {
   constructor(private router: Router, private authService: AuthService, private dataService: DataService) {
   }
 
-ip_local = '';
-token_local = '';
+  localIp = '';
+  localToken = '';
 
-ip_publique = '';
+  apiHost = '';
   username = '';
   password = '';
 
@@ -32,31 +32,32 @@ ip_publique = '';
     
 
   }
-      async envoyer_local() {
+  async connectToLocalDevice() {
     this.router.navigate(['/tableau-de-bord'], {
       queryParams: {
-        ip_local: this.ip_local,
-        token_local: this.token_local
+        localIp: this.localIp,
+        localToken: this.localToken
       }
     });
   }
 
-        async envoyer_publique() {
-this.authService.login(this.username, this.password).subscribe({
+  async connectToRemoteDevice() {
+    this.dataService.apiHost = this.apiHost;
+    this.authService.login(this.username, this.password).subscribe({
 
-   next: (response: LoginResponse) => {
+    next: (response: LoginResponse) => {
 
-    console.log(response.token);
-    this.dataService.token_publique = response.token;
-    this.dataService.ip_publique = this.ip_publique;
-    this.router.navigate(['/tableau-de-bord-en-ligne']);
+      console.log(response.token);
+      this.dataService.jwtToken = response.token;
+//      this.dataService.apiHost = this.apiHost;
+      this.router.navigate(['/tableau-de-bord-en-ligne']);
 
   },
 
-  error: (err: HttpErrorResponse) => {
+    error: (err: HttpErrorResponse) => {
 
-    console.error(err.status);
-    console.error(err.message);
+      console.error(err.status);
+      console.error(err.message);
 
   }
 

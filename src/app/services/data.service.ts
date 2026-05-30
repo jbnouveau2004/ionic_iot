@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class DataService {
 
-  token_publique = '';
-  ip_publique = '';
+  jwtToken = '';
+  apiHost = '';
 
 }

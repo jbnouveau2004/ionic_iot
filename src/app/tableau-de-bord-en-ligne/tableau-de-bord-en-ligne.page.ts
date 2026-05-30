@@ -27,135 +27,125 @@ export class TableauDeBordEnLignePage implements OnInit {
 
    }
 
-    ip_publique = '';
-    username = '';
-    password = '';
-  token_local = '';
+  apiHost = this.dataService.apiHost;
 
-titre = 'Tableau de bord en ligne';
-voyant1 = '';
-voyant2 = '';
-voltage = '-.-- V';
-tension = 0;
+  titre = 'Tableau de bord en ligne';
+  voyant1 = '';
+  voyant2 = '';
+  voltage = '-.-- V';
+  tension = 0;
 
 
-busy = false;
-gpioMessage = '';
+  busy = false;
+  gpioMessage = '';
 
-intervalId: any;
+  intervalId: any;
 
   ngOnInit() {
 
-this.intervalId = setInterval(async() => {
+    this.intervalId = setInterval(async() => {
 
-  if (this.busy) return;
+      if (this.busy) return;
 
-  this.busy = true;
+      this.busy = true;
 
-  try {
+      try {
+
+        const headers = new HttpHeaders({
+          'Authorization': 'Bearer ' + this.dataService.jwtToken
+        });
+
+        const data: any = await firstValueFrom(
+
+          this.http.post(
+            this.dataService.apiHost + '/api/pico/status',
+            {},
+            {
+              headers: headers
+            }
+          )
+
+      );
+
+      if (data.gpio == 1) {
+
+        this.gpioMessage = 'La vanne 1 est ouverte';
+        this.voyant1 = 'vert';
+
+      } else {
+
+        this.gpioMessage = 'La vanne 1 est fermée';
+        this.voyant1 = 'rouge';
+
+      }
+
+      this.voltage = data.voltage + ' V';
+
+    } catch (e: any) {
+
+      console.log('Erreur updateValues:', e.message);
+
+    } finally {
+
+      this.busy = false;
+
+    }
+
+  }, 5000);
+
+  }
+
+
+  async vanne2(event: any) {
 
     const headers = new HttpHeaders({
-      'Authorization': 'Bearer ' + this.dataService.token_publique
+      'Authorization': 'Bearer ' + this.dataService.jwtToken
     });
 
-    const data: any = await firstValueFrom(
+    this.http.post(
+      this.dataService.apiHost + '/api/pico/vanne2/on',
+      {},
+      {
+        headers: headers
+      }
+    ).subscribe({
 
-      this.http.post(
-        'http://' + this.dataService.ip_publique + '/api/pico/status',
-        {},
-        {
-          headers: headers
-        }
-      )
+      next: (reponse) => {
+        console.log('Toggle vanne2 envoyé', reponse);
+      },
 
-    );
+      error: (e) => {
+        console.log('Erreur vanne2:', e.message);
+      }
 
-    if (data.gpio == 1) {
-
-      this.gpioMessage = 'La vanne 1 est ouverte';
-      this.voyant1 = 'vert';
-
-    } else {
-
-      this.gpioMessage = 'La vanne 1 est fermée';
-      this.voyant1 = 'rouge';
-
-    }
-
-    this.voltage = data.voltage + ' V';
-
-  } catch (e: any) {
-
-    console.log('Erreur updateValues:', e.message);
-
-  } finally {
-
-    this.busy = false;
-
-  }
-
-}, 5000);
-
-
-
-
-this.vanne2(event);
-
-
-this.changerTension(event);
-
-
+    });
   }
 
 
-async vanne2(event: any) {
+  async changerTension(event: any) {
 
-  const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + this.dataService.token_publique
-  });
+    if (!event?.detail) return;
 
-  this.http.post(
-    'http://' + this.dataService.ip_publique + '/api/pico/vanne2/on',
-    {},
-    {
-      headers: headers
-    }
-  ).subscribe({
+    this.tension = event.detail.value;
 
-    next: (reponse) => {
-      console.log('Toggle vanne2 envoyé', reponse);
-    },
+    const headers = new HttpHeaders({
+      'Authorization': 'Bearer ' + this.dataService.jwtToken,
+      'Content-Type': 'application/json'
+    });
 
-    error: (e) => {
-      console.log('Erreur vanne2:', e.message);
-    }
+    this.http.post(
+      this.dataService.apiHost + '/api/pico/pwm',
+      { pwm: this.tension },
+      { headers: headers }
+    ).subscribe({
+      next: (reponse) => console.log('PWM envoyé', reponse),
+      error: (e) => console.log('Erreur PWM:', e.message)
+    });
+  }
 
-  });
-}
-
-
-async changerTension(event: any) {
-
-  this.tension = event.detail.value;
-
-  const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + this.dataService.token_publique,
-    'Content-Type': 'application/json'
-  });
-
-  this.http.post(
-    'http://' + this.dataService.ip_publique + '/api/pico/pwm',
-    { pwm: this.tension },
-    { headers: headers }
-  ).subscribe({
-    next: (reponse) => console.log('PWM envoyé', reponse),
-    error: (e) => console.log('Erreur PWM:', e.message)
-  });
-}
-
-async retour(){
-  clearInterval(this.intervalId);
-this.router.navigate(['/home']);
-}
+  async retour(){
+    clearInterval(this.intervalId);
+  this.router.navigate(['/home']);
+  }
 
 }

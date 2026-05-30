@@ -26,147 +26,141 @@ export class TableauDeBordPage implements OnInit {
 
    }
 
-    ip_local = '';
-  token_local = '';
+  localIp = '';
+  localToken = '';
 
-titre = 'Tableau de bord';
-voyant1 = '';
-voyant2 = '';
-voltage = '-.-- V';
-tension = 0;
+  titre = 'Tableau de bord';
+  voyant1 = '';
+  voyant2 = '';
+  voltage = '-.-- V';
+  tension = 0;
 
 
-busy = false;
-gpioMessage = '';
+  busy = false;
+  gpioMessage = '';
 
-intervalId: any;
+  intervalId: any;
 
   ngOnInit() {
 
      this.route.queryParams.subscribe(params => {
-      this.ip_local = params['ip_local'];
-      this.token_local = params['token_local'];
+      this.localIp = params['localIp'];
+      this.localToken = params['localToken'];
      });
 
 
-this.intervalId = setInterval(async() => {
+  this.intervalId = setInterval(async() => {
 
-  if (this.busy) return;
+    if (this.busy) return;
 
-  this.busy = true;
+    this.busy = true;
 
-  try {
+    try {
+
+      const headers = new HttpHeaders({
+        'Authorization': 'Bearer ' + this.localToken
+      });
+
+      const data: any = await firstValueFrom(
+
+        this.http.post(
+          'https://' + this.localIp + '/status',
+          {},
+          {
+            headers: headers
+          }
+        )
+
+      );
+
+      if (data.gpio == 1) {
+
+        this.gpioMessage = 'La vanne 1 est ouverte';
+        this.voyant1 = 'vert';
+
+      } else {
+
+        this.gpioMessage = 'La vanne 1 est fermée';
+        this.voyant1 = 'rouge';
+
+      }
+
+      this.voltage = data.voltage + ' V';
+
+    } catch (e: any) {
+
+      console.log('Erreur updateValues:', e.message);
+
+    } finally {
+
+      this.busy = false;
+
+    }
+
+  }, 5000);
+
+
+    }
+
+
+  async vanne2(event: any) {
 
     const headers = new HttpHeaders({
-      'Authorization': 'Bearer ' + this.token_local
+      'Authorization': 'Bearer ' + this.localToken
     });
 
-    const data: any = await firstValueFrom(
+    this.http.post(
+      'https://' + this.localIp + '/togglevanne2',
+      {},
+      {
+        headers: headers
+      }
+    ).subscribe({
 
-      this.http.post(
-        'https://' + this.ip_local + '/status',
-        {},
-        {
-          headers: headers
-        }
-      )
+      next: (reponse) => {
+        console.log('Toggle vanne2 envoyé', reponse);
+      },
 
-    );
+      error: (e) => {
+        console.log('Erreur vanne2:', e.message);
+      }
 
-    if (data.gpio == 1) {
-
-      this.gpioMessage = 'La vanne 1 est ouverte';
-      this.voyant1 = 'vert';
-
-    } else {
-
-      this.gpioMessage = 'La vanne 1 est fermée';
-      this.voyant1 = 'rouge';
-
-    }
-
-    this.voltage = data.voltage + ' V';
-
-  } catch (e: any) {
-
-    console.log('Erreur updateValues:', e.message);
-
-  } finally {
-
-    this.busy = false;
-
-  }
-
-}, 5000);
-
-
-
-
-this.vanne2(event);
-
-
-this.changerTension(event);
-
-
+    });
   }
 
 
-async vanne2(event: any) {
+  async changerTension(event: any) {
 
-  const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + this.token_local
-  });
+    if (!event?.detail) return;
 
-  this.http.post(
-    'https://' + this.ip_local + '/togglevanne2',
-    {},
-    {
-      headers: headers
-    }
-  ).subscribe({
+    const headers = new HttpHeaders({
+      'Authorization': 'Bearer ' + this.localToken,
+      'X-PWM': this.tension
+    });
 
-    next: (reponse) => {
-      console.log('Toggle vanne2 envoyé', reponse);
-    },
+    this.http.post(
+      'https://' + this.localIp + '/pwm',
+      {},
+      {
+        headers: headers
+      }
+    ).subscribe({
 
-    error: (e) => {
-      console.log('Erreur vanne2:', e.message);
-    }
+      next: (reponse) => {
+        console.log('PWM envoyé', reponse);
+      },
 
-  });
-}
+      error: (e) => {
+        console.log('Erreur PWM:', e.message);
+      }
 
+    });
 
-async changerTension(event: any) {
+  }
 
-  const headers = new HttpHeaders({
-    'Authorization': 'Bearer ' + this.token_local,
-    'X-PWM': this.tension
-  });
-
-  this.http.post(
-    'https://' + this.ip_local + '/pwm',
-    {},
-    {
-      headers: headers
-    }
-  ).subscribe({
-
-    next: (reponse) => {
-      console.log('PWM envoyé', reponse);
-    },
-
-    error: (e) => {
-      console.log('Erreur PWM:', e.message);
-    }
-
-  });
-
-}
-
-async retour(){
-  clearInterval(this.intervalId);
-this.router.navigate(['/home']);
-}
+  async retour(){
+    clearInterval(this.intervalId);
+  this.router.navigate(['/home']);
+  }
 
 }
